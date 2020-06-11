@@ -12,6 +12,9 @@
 #include <linux/inotify.h>
 #include <linux/cred.h>
 
+#include "file_handle.h"
+#include "flag_handle.h"
+
 // cat /usr/src/kernels/3.10.0-1062.el7.x86_64/include/linux/kallsyms.h | grep "kallsyms_lookup_name"
 // find -name unistd_32.h
 
@@ -26,10 +29,8 @@ typedef struct fd_data {
 	struct fd_list *next;
 } fd_data;
 
-typedef struct monitor_file {
-	char *orig_path;
-	struct monitor_file *next, *prev;
-} monitor_file;
+monitor_file *file_list;
+monitor_flag *flag_list;
 
 void **sys_call_table;
 int count;
@@ -51,7 +52,6 @@ void DisablePageWriting(void){
 
 }
 
-/*
 static void time_cat(char *buf)
 {
 	time_t time_tmp;
@@ -73,7 +73,7 @@ static void time_cat(char *buf)
 	p += snprintf(buf+p, sizeof(cur_tm.tm_sec), "%.2d", cur_tm.tm_sec);
 	p += snprintf(buf+p, sizeof(tv.tv_nsec), "%.6ld", tv.tv_nsec / 1000);
 }
-*/
+
 /*
 static void make_dummy_file(char *pathname)
 {
@@ -100,8 +100,8 @@ static void make_dummy_file(char *pathname)
 	set_fs (oldfs);
 	commit_creds(old_cred);
 }
-
-static void do_backup(const char *orig_path)
+*/
+static void do_backup(const char *orig_path, int i_node)
 {
 	mm_segment_t oldfs = get_fs();
 	set_fs(get_ds());
@@ -113,11 +113,11 @@ static void do_backup(const char *orig_path)
 		//filp_close(orig_fp, NULL);
 		return;
 	}
-
+	//printk("Backup Start\n");
 	char *copy_path = kmalloc(PATH_MAX, GFP_KERNEL);
 	memset(copy_path, 0, PATH_MAX);
 	//strncpy(copy_path, orig_path, strlen(orig_path) - 4);
-	strcpy(copy_path, "/home/rnd/source/fiotest/");
+	strcpy(copy_path, "/home/rnd/fiotest/");
 	time_cat(copy_path);
 	strcat(copy_path, ".doc");
 	struct file *copy_fp = filp_open(copy_path, O_WRONLY|O_CREAT, 0777);
@@ -153,24 +153,15 @@ static void do_backup(const char *orig_path)
 
 	set_fs (oldfs);
 
+	add_file(orig_path, copy_path, &file_list, 0, i_node);
 	printk("Backup Complete\n");
 }
-*/
 
 asmlinkage int (*original_open) (const char *, int, mode_t);
 asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 {
-	//if (!(flags & (O_WRONLY|O_RDWR)))
-		//return (*original_open)(pathname, flags, mode);
-
-	//if(!strncmp(pathname, "/proc", 5) || !strncmp(pathname, "/sys", 4) || !strncmp(pathname, "/dev/pts", 8))
-
-	if(strncmp(pathname, "/home/rnd/source/", 17))
+	if(!strstr(pathname, "/home/rnd/monitor/"))
 		return (*original_open)(pathname, flags, mode);
-
-	printk(KERN_ALERT "OPEN : %s ", pathname);
-	
-	//int ret = (*original_open)(pathname, flags, mode);
 
 	unsigned int orig_size = 0;
 	struct kstat st;
@@ -178,13 +169,34 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	vfs_stat(pathname, &st);
 	orig_size = st.size;
 
-	//do_backup(pathname);
-		//printk("Backup Complete\n");
+	if((flags & O_CREAT) && (!is_flag_in(O_CREAT, st.ino, flag_list)) && (st.size != 0))
+	{
+		add_flag(flags, st.ino, &flag_list);
+	}
+	else if((flags & O_RDWR) || (flags & O_NOATIME))
+	{
+		if(is_flag_in(O_CREAT, st.ino, flag_list))
+		{
+			if(st.size != 0)
+			{
+				do_backup(pathname);
+				del_flag(O_CREAT, st.ino, &flag_list);
+			}
+		}
+		else
+		{
+			if(!is_file_in(pathname, file_list) && st.size != 0)
+			{
+				do_backup(pathname, st.ino);
+				printk_file_nodes(file_list);
+			}
+		}
+	}
+	//char flag_list[1000];
+	//memset(flag_list, 0, sizeof(flag_list));
+	//strcpy(flag_list, "");
 
-	char flag_list[1000];
-	memset(flag_list, 0, sizeof(flag_list));
-	strcpy(flag_list, "");
-
+/*
 	if(flags & O_RDONLY)
 		strcat(flag_list, "[O_RDONLY]");
 	if(flags & O_WRONLY)
@@ -227,11 +239,14 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 		strcat(flag_list, "[O_LARGEFILE]");
 	if(flags & O_NOATIME)
 		strcat(flag_list, "[O_NOATIME]");
-
-	printk(KERN_ALERT "%s\n", flag_list);
+	if(!strcmp(flag_list, ""))
+		strcat(flag_list, "[NONE]");
+	printk(KERN_ALERT "OPEN : %s | %s\n", pathname, flag_list);
+*/
 
 	//printk("-----------------------------\n");
-	printk("%d %d %d %d %d %d %d %d %d\n", st.dev, st.ino, st.mode, st.nlink, st.rdev, st.size, st.blksize, st.blocks, st.ctime);
+	printk("[inode : %d][fsize : %d][ctime : %d][mtime : %d]\n", st.ino, st.size, st.ctime, st.mtime);
+	do_backup(pathname);
 	printk("-----------------------------\n");
 	
 	//if(strncmp(pathname, "/var/log/journal", 16) && strncmp(pathname, "/var/lib/rsyslog", 16))
@@ -265,7 +280,7 @@ asmlinkage ssize_t new_write(int fd, void *buf, size_t n)
 asmlinkage int (*original_creat) (const char *, mode_t);
 asmlinkage int new_creat(const char *file, mode_t mode)
 {
-	if(!strncmp(file, "/home/rnd/source/", 17))
+	if(strstr(file, "/home/rnd/monitor/"))
 		printk(KERN_ALERT "CREAT : %d | %s\n", mode, file);
 	//count++;
 	return (*original_creat)(file, mode);
@@ -274,7 +289,7 @@ asmlinkage int new_creat(const char *file, mode_t mode)
 asmlinkage int (*original_rename) (const char *, const char *);
 asmlinkage int new_rename(const char *oldpath, const char *newpath)
 {
-	if(!strncmp(oldpath, "/home/rnd/source/", 17) && !strncmp(newpath, "/home/rnd/source/", 17))
+	if(strstr(oldpath, "/home/rnd/monitor/") && strstr(newpath, "/home/rnd/monitor/"))
 	{
 		printk(KERN_ALERT "RENAME : %s -> %s\n", oldpath, newpath);
 		//do_backup(oldpath);
@@ -289,7 +304,7 @@ asmlinkage int new_unlink(const char *pathname)
 	//printk("UNLINK : %s\n", pathname);
 	//make_dummy_file();
 
-	if(strstr(pathname, "/home/rnd/source/"))
+	if(strstr(pathname, "/home/rnd/monitor/"))
 	{
 		//make_dummy_file(pathname);
 		printk(KERN_ALERT "UNLINK : %s", pathname);
@@ -327,7 +342,8 @@ static void enable_page_protection(void) {
 }
 
 static int __init init_hello(void) {
-	printk(KERN_ALERT "Hello, kernel!\n");
+	printk(KERN_ALERT "MODULE INSERTED\n");
+
 	sys_call_table = kallsyms_lookup_name("sys_call_table"); // maybe returned address of sys_call_table
 
 	disable_page_protection();
@@ -361,7 +377,7 @@ static int __init init_hello(void) {
 }
 
 static void __exit exit_hello(void) {
-	printk(KERN_ALERT "Bye, Kernel!\n");
+	printk(KERN_ALERT "MODULE REMOVED\n");
 	disable_page_protection();
 	//EnablePageWriting();
 	{
