@@ -1,34 +1,34 @@
 #include "flag_handle.h"
 
-monitor_flag *make_flag_node(int flag, int i_node)
+monitor_flag *make_flag_node(int flag, int inode)
 {
 	monitor_flag *new_flag = kmalloc(sizeof(monitor_flag), GFP_KERNEL);
 	new_flag->flag = flag;
-	new_flag->i_node = i_node;
+	new_flag->inode = inode;
 	new_flag->prev = NULL;
 	new_flag->next = NULL;
 	
 	return new_flag;
 }
 
-void add_flag(int flag, int i_node, monitor_flag **head)
+void add_flag(int flag, int inode, monitor_flag **head)
 {
 	monitor_flag *ptr = *head;
 	
 	if(ptr == NULL)
 	{
-		*head = make_flag_node(flag, i_node);
+		*head = make_flag_node(flag, inode);
 		return;
 	}
 	
 	while(ptr->next != NULL)
 		ptr = ptr->next;
 
-	ptr->next = make_flag_node(flag, i_node);
+	ptr->next = make_flag_node(flag, inode);
 	ptr->next->prev = ptr;
 }
 
-void del_flag(int flag, int i_node, monitor_flag **head)
+void del_flag(int flag, int inode, monitor_flag **head)
 {
 	monitor_flag *ptr = *head;
 
@@ -37,7 +37,7 @@ void del_flag(int flag, int i_node, monitor_flag **head)
 
 	while(ptr != NULL)
 	{
-		if((ptr->flag & flag) && ptr->i_node == i_node)
+		if((ptr->flag & flag) && ptr->inode == inode)
 		{
 			monitor_flag *temp = ptr;
 			ptr = ptr->next;
@@ -64,13 +64,13 @@ void del_flag(int flag, int i_node, monitor_flag **head)
 	}
 }
 
-int is_flag_in(int flag, int i_node, monitor_flag *head)
+int is_flag_in(int flag, int inode, monitor_flag *head)
 {
 	monitor_flag *ptr = head;
 
 	while(ptr != NULL)
 	{
-		if((ptr->flag & flag) && ptr->i_node == i_node)
+		if((ptr->flag & flag) && ptr->inode == inode)
 			return 1;
 		
 		ptr = ptr->next;

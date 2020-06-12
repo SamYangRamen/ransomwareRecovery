@@ -1,5 +1,5 @@
 obj-m += target.o
-target-objs := test.o file_handle.o flag_handle.o
+target-objs := test.o file_handle.o flag_handle.o signature.o
 
 KDIR := /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)

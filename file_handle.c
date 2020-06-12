@@ -1,6 +1,6 @@
 #include "file_handle.h"
 
-monitor_file *make_file_node(char *orig_path, char *copy_path, long long int time_to_check, int i_node)
+monitor_file *make_file_node(char *orig_path, char *copy_path, long long int time_to_check, int inode)
 {
 	monitor_file *new_file = kmalloc(sizeof(monitor_file), GFP_KERNEL);
 	new_file->orig_path = kmalloc(sizeof(char) * (strlen(orig_path) + 1), GFP_KERNEL);
@@ -10,7 +10,7 @@ monitor_file *make_file_node(char *orig_path, char *copy_path, long long int tim
 	strcpy(new_file->orig_path, orig_path);
 	strcpy(new_file->copy_path, copy_path);
 	new_file->backup_time = time_to_check;
-	new_file->i_node = i_node;
+	new_file->inode = inode;
 	new_file->is_last = 1;
 	new_file->prev = NULL;
 	new_file->next = NULL;
@@ -18,13 +18,13 @@ monitor_file *make_file_node(char *orig_path, char *copy_path, long long int tim
 	return new_file;
 }
 
-void add_file(char *orig_path, char *copy_path, monitor_file **head, long long int time_to_check, int i_node)
+void add_file(char *orig_path, char *copy_path, monitor_file **head, long long int time_to_check, int inode)
 {
 	monitor_file *ptr = *head;
 	
 	if(ptr == NULL)
 	{
-		*head = make_file_node(orig_path, copy_path, time_to_check, i_node);
+		*head = make_file_node(orig_path, copy_path, time_to_check, inode);
 		return;
 	}
 	
@@ -37,7 +37,7 @@ void add_file(char *orig_path, char *copy_path, monitor_file **head, long long i
 	if(!strcmp(ptr->orig_path, orig_path))
 		ptr->is_last = 0;
 
-	ptr->next = make_file_node(orig_path, copy_path, time_to_check, i_node);
+	ptr->next = make_file_node(orig_path, copy_path, time_to_check, inode);
 	ptr->next->prev = ptr;
 }
 
@@ -128,7 +128,7 @@ int is_file_in(char *file_path, monitor_file *head)
 	
 	while(ptr != NULL)
 	{
-		if(!strcmp(file_path, ptr->orig_path))
+		if(!strcmp(file_path, ptr->orig_path) || !strcmp(file_path, ptr->copy_path))
 			return 1;
 		ptr = ptr->next;
 	}
@@ -162,9 +162,4 @@ int is_temp_file(char *name)
 	if(name[0] == '.' && (!strcmp(name + name_len - 4, ".swx") || !strcmp(name + name_len - 4, ".swp")))
 		return 1;
 	return 0;
-}
-
-void foo()
-{
-	printk("ABCDE\n");
 }
