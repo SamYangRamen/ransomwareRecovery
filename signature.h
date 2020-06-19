@@ -9,6 +9,7 @@
 #include <linux/uaccess.h>
 
 #include "define_value.h"
+#include "file_handle.h"
 
 typedef struct signature {
 	char ext[5];
@@ -26,5 +27,6 @@ unsigned char parsing_hex(char ch);
 void printk_signature_nodes(signature *head);
 unsigned char *parsing_signature(char *sig_shape_str, int sig_shape_str_size);
 int is_signature_in(char *file_path, signature *signature_list, int size);
+int is_ransom_ext(char *file_path, signature *signature_list);
 
 #endif

@@ -203,32 +203,47 @@ int is_signature_in(char *file_path, signature *signature_list, int size)
 	If the file's extention and signature are in signature_list, return 1.
 	If not, return 0.
 	*/
-
-	mm_segment_t oldfs = get_fs();
-	set_fs(get_ds());
-
-	struct file *fp;
-
 	int ret = 0;
 
+	if(size == 0)
+		ret += IS_EMPTY_FILE;
+
+	int i;
+	struct file *fp;
 	signature *ptr = signature_list;
 	unsigned char sign[MAX_SIG_SHAPE_SIZE], temp[MAX_SIG_SHAPE_SIZE];
-
+	char real_file_name[NAME_MAX];
 	memset(temp, 0, MAX_SIG_SHAPE_SIZE);
+	memset(real_file_name, 0, NAME_MAX);
+
+	for(i = strlen(file_path) - 1; file_path[i] != '/'; i--);
+	make_real_file_name(file_path + i + 1, real_file_name);
+
+	if(strcmp(file_path + i + 1, real_file_name))
+		ret += IS_TEMP_FILE;
+
+	for(i = 0; i < strlen(real_file_name); i++)
+		if(real_file_name[i] == '.')
+			break;
 
 	while(ptr != NULL)
 	{
-		if(!strcmp(ptr->ext, file_path + strlen(file_path) - strlen(ptr->ext)))
+		if(strstr(real_file_name + i, ptr->ext))
 		{
-			ret += EXT_O;
+			ret += IS_TARGET_FILE;
 
-			if(!size)
+			if(strcmp(real_file_name + i, ptr->ext))
+				ret += IS_INFECTED_EXT;
+
+			if((ret & IS_EMPTY_FILE) || (ret & IS_TEMP_FILE))
 				break;
 
+			mm_segment_t oldfs = get_fs();
+			set_fs(get_ds());
+
 			fp = filp_open(file_path, O_RDONLY, 0);
-			if(fp)
+			if(!IS_ERR(fp))
 			{
-				printk("%s\n", file_path);
 				vfs_llseek(fp, 0, SEEK_SET);
 				vfs_read(fp, temp, ptr->size, &fp->f_pos);
 
@@ -239,18 +254,52 @@ int is_signature_in(char *file_path, signature *signature_list, int size)
 				memcpy(sign, temp, ptr->size);
 				filp_close(fp, 0);
 
-				if(!memcmp(sign, ptr->data, ptr->size))
-					ret += SIG_O;
+				if(memcmp(sign, ptr->data, ptr->size))
+					ret += IS_INFECTED_SIG;
 			}
-			else
-				filp_close(fp, 0);
 
+			set_fs (oldfs);
 			break;
 		}
 
 		ptr = ptr->next;
 	}
 
-	set_fs (oldfs);
 	return ret;
+}
+
+int is_ransom_ext(char *file_path, signature *signature_list)
+{
+	// is the file's extention's shape is like .doc.abc ?
+	struct kstat st;
+	memset(&st, 0, sizeof(st));
+	vfs_stat(file_path, &st);
+
+	if(S_ISDIR(st.mode))
+		return 0;
+
+	int i, j, len = strlen(file_path);
+	char real_file_name[NAME_MAX];
+	memset(real_file_name, 0, sizeof(real_file_name));
+
+	for(i = strlen(file_path) - 1; file_path[i] != '/'; i--);
+	make_real_file_name(file_path + i + 1, real_file_name);
+
+	len = strlen(real_file_name);
+	for(j = 0; j < len; j++)
+		if(real_file_name[j] == '.')
+		{
+			signature *ptr = signature_list;
+
+			while(ptr != NULL)
+			{
+				if(strstr(real_file_name + j, ptr->ext) && strcmp(real_file_name + j, ptr->ext))
+				{
+					return 1;
+				}
+				ptr = ptr->next;
+			}
+		}
+
+	return 0;
 }

@@ -5,15 +5,20 @@
 #include <linux/module.h>
 #include <linux/string.h>
 #include <linux/slab.h>
+#include <linux/fs.h>
 
 typedef struct monitor_flag {
-	int flag, inode;
+	int flag;
+	char *file_path;
 	struct monitor_flag *next, *prev;
 } monitor_flag;
 
-monitor_flag *make_flag_node(int flag, int inode);
-void add_flag(int flag, int inode, monitor_flag **head);
-void del_flag(int flag, int inode, monitor_flag **head);
-int is_flag_in(int flag, int inode, monitor_flag *head);
+monitor_flag *make_flag_node(int flag, char *file_path);
+void add_flag_node(int flag, char *file_path, monitor_flag **head);
+void printk_flag_nodes(monitor_flag *head);
+void del_flag_node(int flag, char *file_path, monitor_flag **head);
+int is_flag_in(int flag, char *file_path, monitor_flag *head);
+void check_flag_path(monitor_flag **head);
+void print_flags(int flags);
 
 #endif

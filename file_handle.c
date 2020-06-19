@@ -1,6 +1,6 @@
 #include "file_handle.h"
 
-monitor_file *make_file_node(char *orig_path, char *copy_path, long long int time_to_check, int inode)
+monitor_file *make_file_node(char *orig_path, char *copy_path, long long int time_to_check)
 {
 	monitor_file *new_file = kmalloc(sizeof(monitor_file), GFP_KERNEL);
 	new_file->orig_path = kmalloc(sizeof(char) * (strlen(orig_path) + 1), GFP_KERNEL);
@@ -10,7 +10,6 @@ monitor_file *make_file_node(char *orig_path, char *copy_path, long long int tim
 	strcpy(new_file->orig_path, orig_path);
 	strcpy(new_file->copy_path, copy_path);
 	new_file->backup_time = time_to_check;
-	new_file->inode = inode;
 	new_file->is_last = 1;
 	new_file->prev = NULL;
 	new_file->next = NULL;
@@ -18,13 +17,13 @@ monitor_file *make_file_node(char *orig_path, char *copy_path, long long int tim
 	return new_file;
 }
 
-void add_file(char *orig_path, char *copy_path, monitor_file **head, long long int time_to_check, int inode)
+void add_file_node(char *orig_path, char *copy_path, monitor_file **head, long long int time_to_check)
 {
 	monitor_file *ptr = *head;
 	
 	if(ptr == NULL)
 	{
-		*head = make_file_node(orig_path, copy_path, time_to_check, inode);
+		*head = make_file_node(orig_path, copy_path, time_to_check);
 		return;
 	}
 	
@@ -37,11 +36,11 @@ void add_file(char *orig_path, char *copy_path, monitor_file **head, long long i
 	if(!strcmp(ptr->orig_path, orig_path))
 		ptr->is_last = 0;
 
-	ptr->next = make_file_node(orig_path, copy_path, time_to_check, inode);
+	ptr->next = make_file_node(orig_path, copy_path, time_to_check);
 	ptr->next->prev = ptr;
 }
 
-void del_file(char *del_path, monitor_file **head)
+void del_file_node(char *del_path, monitor_file **head)
 {
 	monitor_file *ptr = *head;
 
@@ -162,4 +161,16 @@ int is_temp_file(char *name)
 	if(name[0] == '.' && (!strcmp(name + name_len - 4, ".swx") || !strcmp(name + name_len - 4, ".swp")))
 		return 1;
 	return 0;
+}
+
+void remove_real_file(char *file_path)
+{
+	struct file *del_fp = filp_open(file_path, O_RDONLY, 0);
+	if(!IS_ERR(del_fp))
+	{
+		struct inode *parent_inode = del_fp->f_path.dentry->d_parent->d_inode;
+		inode_lock(parent_inode);
+		vfs_unlink(parent_inode, del_fp->f_path.dentry, NULL);    
+		inode_unlock(parent_inode);
+	}
 }
