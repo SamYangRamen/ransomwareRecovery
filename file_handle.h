@@ -7,6 +7,8 @@
 #include <linux/slab.h>
 #include <linux/fs.h>
 #include <linux/fcntl.h>
+#include <linux/uaccess.h>
+#include <linux/cred.h>
 
 #include "define_value.h"
 

@@ -6,6 +6,9 @@
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/fs.h>
+#include <linux/cred.h>
+#include <linux/stat.h>
+#include <linux/uaccess.h>
 
 typedef struct monitor_flag {
 	int flag;
@@ -20,5 +23,6 @@ void del_flag_node(int flag, char *file_path, monitor_flag **head);
 int is_flag_in(int flag, char *file_path, monitor_flag *head);
 void check_flag_path(monitor_flag **head);
 void print_flags(int flags);
+void print_open_status(char *file_path, int flags);
 
 #endif

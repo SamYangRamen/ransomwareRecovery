@@ -3,62 +3,62 @@
 void init_signature_list(signature **signature_list)
 {
 	/*document*/
-	add_signature(signature_list, ".ppt", "00 6E 1E F0", 4, 512);
-	add_signature(signature_list, ".ppt", "A0 46 1D F0", 4, 512);
-	add_signature(signature_list, ".ppt", "FD FF FF FF 0E 00 00 00", 8, 512);
-	add_signature(signature_list, ".ppt", "FD FF FF FF 1C 00 00 00", 8, 512);
-	add_signature(signature_list, ".ppt", "FD FF FF FF 43 00 00 00", 8, 512);
-	add_signature(signature_list, ".ppt", "0F 00 E8 03", 4, 512);
-	add_signature(signature_list, ".ppt", "D0 CF 11 E0 A1 B1 1A E1", 8, 0);
-	add_signature(signature_list, ".pptx", "50 4B 03 04", 4, 0);
-	add_signature(signature_list, ".pptx", "50 4B 03 04 14 00 06 00", 8, 0);
-	add_signature(signature_list, ".xls", "D0 CF 11 E0 A1 B1 1A E1", 8, 0);
-	add_signature(signature_list, ".xls", "09 08 10 00 00 06 05 00", 8, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 10 00", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 1F 00", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 22 00", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 23 00", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 28 00", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 29 00", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 10 02", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 1F 02", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 22 02", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 23 02", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 28 02", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 29 02", 6, 512);
-	add_signature(signature_list, ".xls", "FD FF FF FF 20 00 00 00", 8, 512);
-	add_signature(signature_list, ".xlsx", "50 4B 03 04", 4, 0);
-	add_signature(signature_list, ".xlsx", "50 4B 03 04 14 00 06 00", 8, 0);
-	add_signature(signature_list, ".doc", "D0 CF 11 E0 A1 B1 1A E1", 8, 0);
-	add_signature(signature_list, ".doc", "EC A5 C1 00", 4, 512);
-	add_signature(signature_list, ".doc", "0D 44 4F 43", 4, 0);
-	add_signature(signature_list, ".doc", "31 BE 00 00 00 AB", 6, 0);
-	add_signature(signature_list, ".doc", "7F FE 34 0A", 4, 0);
-	add_signature(signature_list, ".doc", "9B A5", 2, 0);
-	add_signature(signature_list, ".doc", "DB A5 2D 00", 4, 0);
-	add_signature(signature_list, ".doc", "12 34 56 78 90 FF", 6, 0);
-	add_signature(signature_list, ".doc", "CF 11 E0 A1 B1 1A E1 00", 8, 0);
-	add_signature(signature_list, ".docx", "50 4B 03 04", 4, 0);
-	add_signature(signature_list, ".docx", "50 4B 03 04 14 00 06 00", 8, 0);
-	add_signature(signature_list, ".pdf", "25 50 44 46", 4, 0);
+	add_signature_node(signature_list, ".ppt", "00 6E 1E F0", 4, 512);
+	add_signature_node(signature_list, ".ppt", "A0 46 1D F0", 4, 512);
+	add_signature_node(signature_list, ".ppt", "FD FF FF FF 0E 00 00 00", 8, 512);
+	add_signature_node(signature_list, ".ppt", "FD FF FF FF 1C 00 00 00", 8, 512);
+	add_signature_node(signature_list, ".ppt", "FD FF FF FF 43 00 00 00", 8, 512);
+	add_signature_node(signature_list, ".ppt", "0F 00 E8 03", 4, 512);
+	add_signature_node(signature_list, ".ppt", "D0 CF 11 E0 A1 B1 1A E1", 8, 0);
+	add_signature_node(signature_list, ".pptx", "50 4B 03 04", 4, 0);
+	add_signature_node(signature_list, ".pptx", "50 4B 03 04 14 00 06 00", 8, 0);
+	add_signature_node(signature_list, ".xls", "D0 CF 11 E0 A1 B1 1A E1", 8, 0);
+	add_signature_node(signature_list, ".xls", "09 08 10 00 00 06 05 00", 8, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 10 00", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 1F 00", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 22 00", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 23 00", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 28 00", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 29 00", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 10 02", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 1F 02", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 22 02", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 23 02", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 28 02", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 29 02", 6, 512);
+	add_signature_node(signature_list, ".xls", "FD FF FF FF 20 00 00 00", 8, 512);
+	add_signature_node(signature_list, ".xlsx", "50 4B 03 04", 4, 0);
+	add_signature_node(signature_list, ".xlsx", "50 4B 03 04 14 00 06 00", 8, 0);
+	add_signature_node(signature_list, ".doc", "D0 CF 11 E0 A1 B1 1A E1", 8, 0);
+	add_signature_node(signature_list, ".doc", "EC A5 C1 00", 4, 512);
+	add_signature_node(signature_list, ".doc", "0D 44 4F 43", 4, 0);
+	add_signature_node(signature_list, ".doc", "31 BE 00 00 00 AB", 6, 0);
+	add_signature_node(signature_list, ".doc", "7F FE 34 0A", 4, 0);
+	add_signature_node(signature_list, ".doc", "9B A5", 2, 0);
+	add_signature_node(signature_list, ".doc", "DB A5 2D 00", 4, 0);
+	add_signature_node(signature_list, ".doc", "12 34 56 78 90 FF", 6, 0);
+	add_signature_node(signature_list, ".doc", "CF 11 E0 A1 B1 1A E1 00", 8, 0);
+	add_signature_node(signature_list, ".docx", "50 4B 03 04", 4, 0);
+	add_signature_node(signature_list, ".docx", "50 4B 03 04 14 00 06 00", 8, 0);
+	add_signature_node(signature_list, ".pdf", "25 50 44 46", 4, 0);
 
 	/*image*/
-	add_signature(signature_list, ".jpg", "FF D8 FF E0 00 10 4A 46 49 46 00 01", 12, 0);
-	add_signature(signature_list, ".jpg", "FF D8 FF E1 xx xx 45 78 69 66 00 00", 12, 0);
-	add_signature(signature_list, ".jpg", "FF D8 FF E8 xx xx 53 50 49 46 46 00", 12, 0);
-	add_signature(signature_list, ".png", "89 50 4E 47 0D 0A 1A 0A", 8, 0);
+	add_signature_node(signature_list, ".jpg", "FF D8 FF E0 00 10 4A 46 49 46 00 01", 12, 0);
+	add_signature_node(signature_list, ".jpg", "FF D8 FF E1 xx xx 45 78 69 66 00 00", 12, 0);
+	add_signature_node(signature_list, ".jpg", "FF D8 FF E8 xx xx 53 50 49 46 46 00", 12, 0);
+	add_signature_node(signature_list, ".png", "89 50 4E 47 0D 0A 1A 0A", 8, 0);
 
 	/*music*/
-	add_signature(signature_list, ".mp3", "49 44 33", 3, 0);
-	add_signature(signature_list, ".mp3", "FF FB", 2, 0);
-	add_signature(signature_list, ".flac", "66 4C 61 43", 4, 0);
+	add_signature_node(signature_list, ".mp3", "49 44 33", 3, 0);
+	add_signature_node(signature_list, ".mp3", "FF FB", 2, 0);
+	add_signature_node(signature_list, ".flac", "66 4C 61 43", 4, 0);
 
 	/*media*/
-	add_signature(signature_list, ".mp4", "66 74 79 70 4D 53 4E 56", 8, 4);
-	add_signature(signature_list, ".mp4", "66 74 79 70 4D 53 4E 56", 8, 4);
-	add_signature(signature_list, ".mp4", "66 74 79 70 69 73 6F 6D", 8, 4);
-	add_signature(signature_list, ".mp4", "00 00 00 18 66 74 79 70 33 67 70 35", 12, 0);
-	add_signature(signature_list, ".mkv", "1A 45 DF A3", 4, 0);
+	add_signature_node(signature_list, ".mp4", "66 74 79 70 4D 53 4E 56", 8, 4);
+	add_signature_node(signature_list, ".mp4", "66 74 79 70 4D 53 4E 56", 8, 4);
+	add_signature_node(signature_list, ".mp4", "66 74 79 70 69 73 6F 6D", 8, 4);
+	add_signature_node(signature_list, ".mp4", "00 00 00 18 66 74 79 70 33 67 70 35", 12, 0);
+	add_signature_node(signature_list, ".mkv", "1A 45 DF A3", 4, 0);
 
 	printk("Signature Init Complete\n");
 }
@@ -76,19 +76,7 @@ signature *make_signature_node(char ext[5], char *sig_shape_str, int sig_shape_s
 	return new_sig;
 }
 
-void flush_signature_nodes(signature **head)
-{
-	signature *ptr;
-
-	while(*head != NULL)
-	{
-		ptr = *head;
-		*head = (*head)->next;
-		kfree(ptr);
-	}
-}
-
-void add_signature(signature **head, char ext[5], char *sig_shape_str, int sig_shape_str_size, int offset)
+void add_signature_node(signature **head, char ext[5], char *sig_shape_str, int sig_shape_str_size, int offset)
 {
 	signature *ptr = *head;
 	
@@ -107,6 +95,8 @@ void add_signature(signature **head, char ext[5], char *sig_shape_str, int sig_s
 
 void printk_signature_nodes(signature *head)
 {
+	/* I used this function to test or debug */
+
 	char print_buf[128];
 
 	printk("--------------added signatures list--------------\n");
@@ -132,12 +122,24 @@ void printk_signature_nodes(signature *head)
 	printk("-----------------------------------------------\n");
 }
 
+void flush_signature_nodes(signature **head)
+{
+	/* make linked list NULL */
+
+	signature *ptr;
+
+	while(*head != NULL)
+	{
+		ptr = *head;
+		*head = (*head)->next;
+		kfree(ptr);
+	}
+}
+
 unsigned char parsing_hex(char ch)
 {
-	/*
-		if the character ch's value is 'f',
-		this function returns the hex value 15.
-	*/
+	/* if the character ch's value is 'f',
+	   this function returns the hex value 15. */
 
 	if('0' <= ch && ch <= '9')
 	{
@@ -197,12 +199,15 @@ unsigned char *parsing_signature(char *sig_shape_str, int sig_shape_str_size)
 	return ret_sig;
 }
 
-int is_signature_in(char *file_path, signature *signature_list, int size)
+int check_signature(char *file_path, signature *signature_list, int size)
 {
-	/*
-	If the file's extention and signature are in signature_list, return 1.
-	If not, return 0.
-	*/
+	/* To get file's signature status data
+		1) #define IS_TARGET_FILE 1	// To check if file has the target extension
+		2) #define IS_EMPTY_FILE 2	// To check if file size is 0
+		3) #define IS_TEMP_FILE 4	// To check if file name has the shape like ".~lock.[name].ext#" or ".[name].swx" or ".[name].swp"
+		4) #define IS_INFECTED_EXT 8	// To check if file extension's shape is like ".doc.abc" or ".pptx.crypto" or etc.
+		5) #define IS_INFECTED_SIG 16	// To check if file has the signature when the file is displayed in hexadecimal data */
+
 	int ret = 0;
 
 	if(size == 0)
@@ -244,6 +249,10 @@ int is_signature_in(char *file_path, signature *signature_list, int size)
 			fp = filp_open(file_path, O_RDONLY, 0);
 			if(!IS_ERR(fp))
 			{
+				/* 1) When the file is displayed in hexadecimal data,
+				      check whether the signature exists at a position offset
+				      from the starting point or not */
+
 				vfs_llseek(fp, 0, SEEK_SET);
 				vfs_read(fp, temp, ptr->size, &fp->f_pos);
 
@@ -268,38 +277,13 @@ int is_signature_in(char *file_path, signature *signature_list, int size)
 	return ret;
 }
 
-int is_ransom_ext(char *file_path, signature *signature_list)
+void print_sig_state(int sig_flag)
 {
-	// is the file's extention's shape is like .doc.abc ?
-	struct kstat st;
-	memset(&st, 0, sizeof(st));
-	vfs_stat(file_path, &st);
+	/* I used this function to test or debug */
 
-	if(S_ISDIR(st.mode))
-		return 0;
-
-	int i, j, len = strlen(file_path);
-	char real_file_name[NAME_MAX];
-	memset(real_file_name, 0, sizeof(real_file_name));
-
-	for(i = strlen(file_path) - 1; file_path[i] != '/'; i--);
-	make_real_file_name(file_path + i + 1, real_file_name);
-
-	len = strlen(real_file_name);
-	for(j = 0; j < len; j++)
-		if(real_file_name[j] == '.')
-		{
-			signature *ptr = signature_list;
-
-			while(ptr != NULL)
-			{
-				if(strstr(real_file_name + j, ptr->ext) && strcmp(real_file_name + j, ptr->ext))
-				{
-					return 1;
-				}
-				ptr = ptr->next;
-			}
-		}
-
-	return 0;
+	printk("[%s]", sig_flag & IS_TARGET_FILE? "TARGET" : "NON_TARGET");
+	printk("[%s]", sig_flag & IS_EMPTY_FILE? "EMPTY" : "NON_EMPTY");
+	printk("[%s]", sig_flag & IS_TEMP_FILE? "TEMP" : "NON_TEMP");
+	printk("[%s]", sig_flag & IS_INFECTED_EXT? "INFEXT" : "NON_INFEXT");
+	printk("[%s]", sig_flag & IS_INFECTED_SIG? "INFSIG" : "NON_INFSIG");
 }

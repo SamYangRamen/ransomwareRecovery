@@ -22,11 +22,11 @@ typedef struct signature {
 void init_signature_list(signature **signature_list);
 signature *make_signature_node(char ext[5], char *sig_shape_str, int sig_shape_str_size, int offset);
 void flush_signature_nodes(signature **head);
-void add_signature(signature **head, char ext[5], char *sig_shape_str, int sig_shape_str_size, int offset);
+void add_signature_node(signature **head, char ext[5], char *sig_shape_str, int sig_shape_str_size, int offset);
 unsigned char parsing_hex(char ch);
 void printk_signature_nodes(signature *head);
 unsigned char *parsing_signature(char *sig_shape_str, int sig_shape_str_size);
-int is_signature_in(char *file_path, signature *signature_list, int size);
-int is_ransom_ext(char *file_path, signature *signature_list);
+int check_signature(char *file_path, signature *signature_list, int size);
+void print_sig_state(int sig_flag);
 
 #endif
