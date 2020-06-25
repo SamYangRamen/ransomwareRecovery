@@ -21,7 +21,7 @@ typedef struct monitor_file {
 } monitor_file;
 
 monitor_file *make_file_node(char *orig_path, char *copy_path, long long int time_to_check);
-void add_file_node(char *orig_path, char *copy_path, monitor_file **head, long long int time_to_check);
+void add_file_node(char *orig_path, char *copy_path, monitor_file **head, long long int new_backup_time);
 void del_file_node(char *del_path, monitor_file **head);
 void printk_file_nodes(monitor_file *head);
 void flush_file_nodes(monitor_file **head);
@@ -30,5 +30,6 @@ int is_file_in(char *file_path, monitor_file *head);
 void make_real_file_name(char *before_name, char *after_name);
 int is_temp_file(char *name);
 void remove_real_file(char *file_path);
+void find_dentry_iname_offset(char *file_path);
 
 #endif

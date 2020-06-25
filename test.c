@@ -9,7 +9,6 @@
 #include <linux/fcntl.h>
 #include <linux/time.h>
 #include <linux/stat.h>
-#include <linux/inotify.h>
 #include <linux/cred.h>
 #include <linux/dcache.h>
 #include <linux/timer.h>
@@ -30,8 +29,7 @@ MODULE_LICENSE("GPL");
 char *start_dir = "/home/rnd/monitor/";
 char *backup_dir = "/rsbak/";
 
-char **infected_file_list;
-
+monitor_file *ransom_list; // little time gogo
 monitor_file *file_list;
 monitor_flag *flag_list;
 signature *signature_list;
@@ -56,8 +54,6 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	   If pathname's location is not target, let it run */
 	if(!strstr(pathname, start_dir))
 		return (*original_open)(pathname, flags, mode);
-	
-	print_open_status(pathname, flags);
 
 	/* To get file's system status data
 		1) umode_t mode;	// file type and permission
@@ -91,7 +87,6 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	&& (sig_flag & IS_INFECTED_EXT)
 	|| (sig_flag & IS_INFECTED_SIG))
 	{
-		printk("ASASD\n");
 		backup(pathname, &file_list, BACKUP_BEFORE_RECOVERY);
 		recover(pathname, &file_list);
 		return (*original_open)("", O_RDONLY, mode);
@@ -139,7 +134,8 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	}
 
 	/* If user's file handling (link opening, saving and modifying) is finished, flag list should be empty.
-	   Buf if there is remaining nodes, the following function removes them */
+	   Buf if there is remaining nodes, the following function removes them
+	   This function not runs at executing of each open functions but each handling of file */
 	check_flag_path(&flag_list);
 
 	return (*original_open)(pathname, flags, mode);
@@ -159,13 +155,14 @@ asmlinkage ssize_t new_write(int fd, void *buf, size_t n)
 }
 */
 
-/*
+
 asmlinkage int (*original_creat) (const char *, mode_t);
 asmlinkage int new_creat(const char *file, mode_t mode)
 {
+	if(strstr(file, start_dir))
+		printk("CREAT : %s\n", file);
 	return (*original_creat)(file, mode);
 }
-*/
 
 asmlinkage int (*original_rename) (const char *, const char *);
 asmlinkage int new_rename(const char *oldpath, const char *newpath)
@@ -198,6 +195,7 @@ asmlinkage int new_unlink(const char *pathname)
 
 	if(strstr(pathname, start_dir))
 	{
+		printk("UNLINK %s\n", pathname);
 		/* If signs of infection occur, start recovery process */
 		if(is_file_in(pathname, file_list))
 		{
@@ -272,14 +270,14 @@ static int __init init_hello(void) {
 		original_open = sys_call_table[__NR_open];
 		//original_read = sys_call_table[__NR_read];
 		//original_write = sys_call_table[__NR_write];
-		//original_creat = sys_call_table[__NR_creat];
+		original_creat = sys_call_table[__NR_creat];
 		original_rename = sys_call_table[__NR_rename];
 		original_unlink = sys_call_table[__NR_unlink];
 		//original_close = sys_call_table[__NR_close];
 		sys_call_table[__NR_open] = new_open;
 		//sys_call_table[__NR_read] = new_read;
 		//sys_call_table[__NR_write] = new_write;
-		//sys_call_table[__NR_creat] = new_creat;
+		sys_call_table[__NR_creat] = new_creat;
 		sys_call_table[__NR_rename] = new_rename;
 		sys_call_table[__NR_unlink] = new_unlink;
 		//sys_call_table[__NR_close] = new_close;
@@ -288,6 +286,10 @@ static int __init init_hello(void) {
 	enable_page_protection(); // disable to write the sys_call_table's address area
 
 	printk(KERN_ALERT "MODULE INSERTED\n");
+
+	find_dentry_iname_offset("/home/rnd/monitor/abcde/abc/");
+	
+
 	return 0;
 }
 
@@ -302,7 +304,7 @@ static void __exit exit_hello(void) {
 		sys_call_table[__NR_open] = original_open;
 		//sys_call_table[__NR_read] = original_read;
 		//sys_call_table[__NR_write] = original_write;
-		//sys_call_table[__NR_creat] = original_creat;
+		sys_call_table[__NR_creat] = original_creat;
 		sys_call_table[__NR_rename] = original_rename;
 		sys_call_table[__NR_unlink] = original_unlink;
 		//sys_call_table[__NR_close] = original_close;

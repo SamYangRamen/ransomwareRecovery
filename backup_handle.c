@@ -121,7 +121,7 @@ void recover(char *infected_path, monitor_file **file_list)
 	/* 1) Remove the infected file
 	   2) Recovered file will be replaced in its place when recover_process is executed */
 	remove_real_file(infected_path);
-
+	printk("IF ; %s\n", infected_path);
 	while(ptr != NULL)
 	{
 		if(strstr(infected_path, ptr->orig_path))
