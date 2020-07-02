@@ -9,12 +9,8 @@
 #include <linux/fcntl.h>
 #include <linux/time.h>
 #include <linux/stat.h>
-#include <linux/inotify.h>
 #include <linux/cred.h>
 #include <linux/dcache.h>
-#include <linux/timer.h>
-#include <linux/delay.h>
-#include <linux/kthread.h>
 
 #include "file_handle.h"
 #include "flag_handle.h"
@@ -24,20 +20,16 @@
 
 MODULE_LICENSE("GPL");
 
-#define PATH_MAX 4096
-#define BUF_SIZE 1024
-
 char *start_dir = "/home/rnd/monitor/";
 char *backup_dir = "/rsbak/";
-
-char **infected_file_list;
 
 monitor_file *file_list;
 monitor_flag *flag_list;
 signature *signature_list;
 
 void **sys_call_table;
-struct task_struct *ts;
+
+long long int ransom_time;
 
 void EnablePageWriting(void){
     write_cr0(read_cr0() & (~0x10000));
@@ -57,6 +49,13 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	if(!strstr(pathname, start_dir))
 		return (*original_open)(pathname, flags, mode);
 	
+	/* prevent removing backup files */
+	if(strstr(pathname, backup_dir))
+	{
+		//printk("CANNOT OPEN THE BACKUP FILE\n");
+		return (*original_open)(NULL, flags, mode);
+	}
+
 	print_open_status(pathname, flags);
 
 	/* To get file's system status data
@@ -79,7 +78,7 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	vfs_stat(pathname, &st);
 
 	/* To get file's signature status data
-		1) #define IS_TARGET_FILE 1	// To check if file has the target extension
+		1) #define IS_HAVING_TARGET_EXT 1	// To check if file has the target extension
 		2) #define IS_EMPTY_FILE 2	// To check if file size is 0
 		3) #define IS_TEMP_FILE 4	// To check if file name has the shape like ".~lock.[name].ext#" or ".[name].swx" or ".[name].swp"
 		4) #define IS_INFECTED_EXT 8	// To check if file extension's shape is like ".doc.abc" or ".pptx.crypto" or etc.
@@ -87,11 +86,11 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	int sig_flag = check_signature(pathname, signature_list, st.size);
 
 	/* If signs of infection occur, start recovery process */
-	if((sig_flag & IS_TARGET_FILE)
+	if((sig_flag & IS_HAVING_TARGET_EXT)
 	&& (sig_flag & IS_INFECTED_EXT)
 	|| (sig_flag & IS_INFECTED_SIG))
 	{
-		printk("ASASD\n");
+		ransom_time = num_cur_time(RET_SECOND);
 		backup(pathname, &file_list, BACKUP_BEFORE_RECOVERY);
 		recover(pathname, &file_list);
 		return (*original_open)("", O_RDONLY, mode);
@@ -102,7 +101,7 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	   If the O_CREAT flag appears and after a while the O_RDWR or O_WRONLY or O_NOATIME flag appears,
 	   if the file's size is not 0 in this moment, the file is real after handling (in other words, changed file because of handling).
 	   Therefore, in this moment we should backup the file */
-	if( (sig_flag & IS_TARGET_FILE)
+	if( (sig_flag & IS_HAVING_TARGET_EXT)
 	&& !(sig_flag & IS_INFECTED_EXT)
 	&& !(sig_flag & IS_TEMP_FILE))
 	{
@@ -141,7 +140,6 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 	/* If user's file handling (link opening, saving and modifying) is finished, flag list should be empty.
 	   Buf if there is remaining nodes, the following function removes them */
 	check_flag_path(&flag_list);
-
 	return (*original_open)(pathname, flags, mode);
 }
 
@@ -149,9 +147,13 @@ asmlinkage int new_open(const char *pathname, int flags, mode_t mode)
 asmlinkage ssize_t (*original_read) (int, void *, size_t);
 asmlinkage ssize_t new_read(int fd, void *buf, size_t nbytes)
 {
+	//if(strstr(__FILE__, start_dir))
+		printk("READ : %s\n", __FILE__);
 	return (*original_read)(fd, buf, nbytes);
 }
+*/
 
+/*
 asmlinkage ssize_t (*original_write) (int fd, void *buf, size_t n);
 asmlinkage ssize_t new_write(int fd, void *buf, size_t n)
 {
@@ -175,6 +177,7 @@ asmlinkage int new_rename(const char *oldpath, const char *newpath)
 		/* If signs of infection occur, start recovery process */
 		if(check_signature(newpath, signature_list, NULL) & IS_INFECTED_EXT)
 		{
+			ransom_time = num_cur_time(RET_SECOND);
 			backup(oldpath, &file_list, BACKUP_BEFORE_RECOVERY);
 			recover(oldpath, &file_list);
 			return (*original_rename)(NULL, NULL);
@@ -190,23 +193,26 @@ asmlinkage int new_rename(const char *oldpath, const char *newpath)
 asmlinkage int (*original_unlink) (const char *);
 asmlinkage int new_unlink(const char *pathname)
 {
+	/* prevent removing backup files */
 	if(strstr(pathname, backup_dir))
 	{
 		printk("CANNOT DELETE THE BACKUP FILE\n");
 		return (*original_unlink)(NULL);
 	}
 
-	if(strstr(pathname, start_dir))
+	/* prevent removing target files when ransomware occur */
+	if(strstr(pathname, start_dir) && is_file_in(pathname, file_list))
 	{
-		/* If signs of infection occur, start recovery process */
-		if(is_file_in(pathname, file_list))
+		if(num_cur_time(RET_SECOND) - ransom_time < PROTECT_TERM)
 		{
-			backup(pathname, &file_list, BACKUP_BEFORE_RECOVERY);
-			recover(pathname, &file_list);
 			printk("CANNOT DELETE THE FILE\n");
 			return (*original_unlink)(NULL);
 		}
-		printk(KERN_ALERT "UNLINK : %s\n", pathname);
+		else
+		{
+			del_file_node(pathname, &file_list);
+			printk(KERN_ALERT "UNLINK : %s\n", pathname);
+		}
 	}
 	
 	return (*original_unlink)(pathname);
@@ -238,31 +244,9 @@ static void enable_page_protection(void) {
 	}
 }
 
-int check(void *data)
-{
-	while(1)
-	{
-		if(kthread_should_stop())
-			break;
-
-		struct file *filp = filp_open("/home/rnd/monitor/ttt.ttt", O_RDONLY, 0);
-		if(IS_ERR(filp))
-			continue;
-
-		struct inode *parent_inode = filp->f_path.dentry->d_parent->d_inode;
-		inode_lock(parent_inode);
-		vfs_unlink(parent_inode, filp->f_path.dentry, NULL);    
-		inode_unlock(parent_inode);
-
-		msleep(1000);
-	}
-
-	return 0;
-}
-
 static int __init init_hello(void) {
 	init_signature_list(&signature_list);
-	ts = kthread_run(check, NULL, "kthread");
+	ransom_time = 0;
 
 	sys_call_table = kallsyms_lookup_name("sys_call_table"); // returned address of sys_call_table
 
@@ -292,9 +276,8 @@ static int __init init_hello(void) {
 }
 
 static void __exit exit_hello(void) {
-	
 	flush_signature_nodes(&signature_list);
-	kthread_stop(ts);
+	flush_file_nodes(&file_list);
 
 	disable_page_protection(); // enable to write the sys_call_table's address area
 	//EnablePageWriting();

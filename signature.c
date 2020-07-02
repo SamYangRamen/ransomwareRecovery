@@ -202,7 +202,7 @@ unsigned char *parsing_signature(char *sig_shape_str, int sig_shape_str_size)
 int check_signature(char *file_path, signature *signature_list, int size)
 {
 	/* To get file's signature status data
-		1) #define IS_TARGET_FILE 1	// To check if file has the target extension
+		1) #define IS_HAVING_TARGET_EXT 1	// To check if file has the target extension
 		2) #define IS_EMPTY_FILE 2	// To check if file size is 0
 		3) #define IS_TEMP_FILE 4	// To check if file name has the shape like ".~lock.[name].ext#" or ".[name].swx" or ".[name].swp"
 		4) #define IS_INFECTED_EXT 8	// To check if file extension's shape is like ".doc.abc" or ".pptx.crypto" or etc.
@@ -235,7 +235,7 @@ int check_signature(char *file_path, signature *signature_list, int size)
 	{
 		if(strstr(real_file_name + i, ptr->ext))
 		{
-			ret += IS_TARGET_FILE;
+			ret += IS_HAVING_TARGET_EXT;
 
 			if(strcmp(real_file_name + i, ptr->ext))
 				ret += IS_INFECTED_EXT;
@@ -281,7 +281,7 @@ void print_sig_state(int sig_flag)
 {
 	/* I used this function to test or debug */
 
-	printk("[%s]", sig_flag & IS_TARGET_FILE? "TARGET" : "NON_TARGET");
+	printk("[%s]", sig_flag & IS_HAVING_TARGET_EXT? "TARGET" : "NON_TARGET");
 	printk("[%s]", sig_flag & IS_EMPTY_FILE? "EMPTY" : "NON_EMPTY");
 	printk("[%s]", sig_flag & IS_TEMP_FILE? "TEMP" : "NON_TEMP");
 	printk("[%s]", sig_flag & IS_INFECTED_EXT? "INFEXT" : "NON_INFEXT");

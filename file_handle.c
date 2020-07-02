@@ -1,6 +1,6 @@
 #include "file_handle.h"
 
-monitor_file *make_file_node(char *orig_path, char *copy_path, long long int time_to_check)
+monitor_file *make_file_node(char *orig_path, char *copy_path, long long int new_backup_time)
 {
 	monitor_file *new_file = kmalloc(sizeof(monitor_file), GFP_KERNEL);
 	new_file->orig_path = kmalloc(sizeof(char) * (strlen(orig_path) + 1), GFP_KERNEL);
@@ -9,7 +9,7 @@ monitor_file *make_file_node(char *orig_path, char *copy_path, long long int tim
 	memset(new_file->copy_path, 0, sizeof(new_file->copy_path));
 	strcpy(new_file->orig_path, orig_path);
 	strcpy(new_file->copy_path, copy_path);
-	new_file->backup_time = time_to_check;
+	new_file->backup_time = new_backup_time;
 	new_file->is_last = 1;
 	new_file->prev = NULL;
 	new_file->next = NULL;
@@ -17,26 +17,53 @@ monitor_file *make_file_node(char *orig_path, char *copy_path, long long int tim
 	return new_file;
 }
 
-void add_file_node(char *orig_path, char *copy_path, monitor_file **head, long long int time_to_check)
+void add_file_node(char *orig_path, char *copy_path, monitor_file **head, long long int new_backup_time)
 {
 	monitor_file *ptr = *head;
-	
-	if(ptr == NULL)
+
+	if(ptr != NULL)
 	{
-		*head = make_file_node(orig_path, copy_path, time_to_check);
-		return;
-	}
-	
-	while(ptr->next != NULL)
-	{
+		while(ptr->next != NULL)
+		{
+			if(!strcmp(ptr->orig_path, orig_path))
+				ptr->is_last = 0;
+
+			if(ptr->is_last == 0 && new_backup_time - ptr->backup_time >= DEL_TERM)
+			{
+				/* remove old backup file because backup disk capacity is not infinite */
+				remove_real_file(ptr->copy_path);
+				ptr = ptr->next;
+				del_file_node(ptr->prev->copy_path, head);
+			}
+			else if(!strcmp(ptr->orig_path, orig_path))
+			{
+				ptr->is_last = 0;
+				ptr = ptr->next;
+			}
+			else
+				ptr = ptr->next;
+		}
+
 		if(!strcmp(ptr->orig_path, orig_path))
 			ptr->is_last = 0;
-		ptr = ptr->next;
-	}
-	if(!strcmp(ptr->orig_path, orig_path))
-		ptr->is_last = 0;
 
-	ptr->next = make_file_node(orig_path, copy_path, time_to_check);
+		if(ptr->is_last == 0 && new_backup_time - ptr->backup_time >= DEL_TERM)
+		{
+			/* remove old backup file because backup disk capacity is not infinite */
+			monitor_file *temp = ptr->prev;
+			remove_real_file(ptr->copy_path);
+			del_file_node(ptr->copy_path, head);
+			ptr = temp;
+		}
+	}
+
+	if(ptr == NULL)
+	{
+		*head = make_file_node(orig_path, copy_path, new_backup_time);
+		return;
+	}
+
+	ptr->next = make_file_node(orig_path, copy_path, new_backup_time);
 	ptr->next->prev = ptr;
 }
 
@@ -51,8 +78,10 @@ void del_file_node(char *del_path, monitor_file **head)
 
 	while(ptr != NULL)
 	{
-		if(!strcmp(ptr->orig_path, del_path) || !strcmp(ptr->copy_path, del_path))
+		if(!strcmp(ptr->orig_path, del_path))
 		{
+			remove_real_file(ptr->copy_path);
+
 			monitor_file *temp = ptr;
 			ptr = ptr->next;
 
