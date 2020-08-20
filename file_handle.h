@@ -31,4 +31,4 @@ void make_real_file_name(char *before_name, char *after_name);
 int is_temp_file(char *name);
 void remove_real_file(char *file_path);
 
-#endif//
+#endif

@@ -29,4 +29,4 @@ unsigned char *parsing_signature(char *sig_shape_str, int sig_shape_str_size);
 int check_signature(char *file_path, signature *signature_list, int size);
 void print_sig_state(int sig_flag);
 
-#endif//
+#endif

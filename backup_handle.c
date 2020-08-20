@@ -36,7 +36,7 @@ void backup(char *orig_path, monitor_file **file_list, char backup_type_flag)
 		printk("Backup directory %s was not made.\n", backup_dir);
 		return;
 	}
-//
+
 	/* 1) remove ext because of file security and add another dummy signature ext
 	   2) check the file name because of making backup file */
 	for(i = strlen(orig_path) - 1; orig_path[i] != '.'; i--);

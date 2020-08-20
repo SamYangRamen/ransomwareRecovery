@@ -11,4 +11,4 @@ void cur_time_readable(char *time_str);
 long long int num_cur_time(int flag);
 
 #endif
-//
+
