@@ -25,4 +25,4 @@ void check_flag_path(monitor_flag **head);
 void print_flags(int flags);
 void print_open_status(char *file_path, int flags);
 
-#endif
+#endif//

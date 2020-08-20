@@ -217,7 +217,7 @@ asmlinkage int new_unlink(const char *pathname)
 	
 	return (*original_unlink)(pathname);
 }
-
+//
 /*
 asmlinkage int (*original_close) (int fd);
 asmlinkage int new_close(int fd)
