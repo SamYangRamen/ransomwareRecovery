@@ -18,3 +18,5 @@ void recover(char *infected_path, monitor_file **file_list);
 void recover_process(char *infected_path, char *copy_path, monitor_file **file_list);
 
 #endif
+
+//

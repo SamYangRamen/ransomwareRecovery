@@ -108,3 +108,5 @@ long long int num_cur_time(int flag)
 
 	return -1;
 }
+
+//
